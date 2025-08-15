@@ -26,9 +26,9 @@ app.get("/store-email", async (req, res) => {
     const storeEmail = response.data.shop.email;
     res.json({ email: storeEmail });
   } catch (error) {
-    console.error(error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to fetch store email" });
-  }
+    console.error("Shopify API Error:", error.response?.data || error.message);
+    res.status(500).json({ error: error.response?.data || error.message });
+}
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
