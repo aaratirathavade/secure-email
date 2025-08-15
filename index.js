@@ -1,8 +1,15 @@
 require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
+const cors = require("cors");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Allow only your Shopify store to make requests
+app.use(cors({
+  origin: "https://its-morpankh.myshopify.com"
+}));
 
 app.get("/store-email", async (req, res) => {
   try {
