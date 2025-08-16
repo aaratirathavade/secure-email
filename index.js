@@ -6,11 +6,12 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allow only your Shopify store to make requests
+// ✅ Allow only your Shopify store frontend to make requests
 app.use(cors({
   origin: "https://its-morpankh.myshopify.com"
 }));
 
+// ✅ GET endpoint to fetch store email
 app.get("/store-email", async (req, res) => {
   try {
     const response = await axios.get(
@@ -27,8 +28,16 @@ app.get("/store-email", async (req, res) => {
     res.json({ email: storeEmail });
   } catch (error) {
     console.error("Shopify API Error:", error.response?.data || error.message);
-    res.status(500).json({ error: error.response?.data || error.message });
-}
+
+    res.status(500).json({
+      error: error.response?.data?.errors || error.message
+    });
+  }
+});
+
+// ✅ Root route (so you don’t see “Cannot GET /”)
+app.get("/", (req, res) => {
+  res.send("🚀 Secure Email App is running!");
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
