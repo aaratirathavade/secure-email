@@ -6,14 +6,27 @@ const cors = require("cors");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Allow only your Shopify store frontend to make requests
+// ✅ Allow Shopify frontend to make requests + handle preflight
 app.use(cors({
-  origin: "https://its-morpankh.myshopify.com"
+  origin: "https://its-morpankh.myshopify.com",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
+// Explicitly handle OPTIONS preflight requests
+app.options("*", cors());
+
+// ✅ Root route (so Render shows something on "/")
+app.get("/", (req, res) => {
+  res.send("🚀 Secure Email App is running!");
+});
 
 // ✅ GET endpoint to fetch store email
 app.get("/store-email", async (req, res) => {
   try {
+    console.log("SHOPIFY_STORE:", process.env.SHOPIFY_STORE);
+    console.log("SHOPIFY_ACCESS_TOKEN:", process.env.SHOPIFY_ACCESS_TOKEN ? "Loaded" : "Missing");
+
     const response = await axios.get(
       `https://${process.env.SHOPIFY_STORE}/admin/api/2025-07/shop.json`,
       {
@@ -24,20 +37,16 @@ app.get("/store-email", async (req, res) => {
       }
     );
 
+    console.log("Shopify Response:", response.data);
+
     const storeEmail = response.data.shop.email;
     res.json({ email: storeEmail });
   } catch (error) {
     console.error("Shopify API Error:", error.response?.data || error.message);
-
     res.status(500).json({
       error: error.response?.data?.errors || error.message
     });
   }
 });
 
-// ✅ Root route (so you don’t see “Cannot GET /”)
-app.get("/", (req, res) => {
-  res.send("🚀 Secure Email App is running!");
-});
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
